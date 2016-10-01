@@ -3,10 +3,23 @@ require_relative '01_sql_object'
 
 module Searchable
   def where(params)
-    # ...
+    where_line = params.keys.map{ |key| "#{key}= ?"}.join('AND ')
+    # byebug
+
+    objects = DBConnection.execute(<<-SQL, *params.values)
+      SELECT
+        *
+      FROM
+        #{self.table_name}
+      WHERE
+        #{where_line}
+    SQL
+
+    objects.map{ |obj| self.new(obj) }
   end
 end
 
 class SQLObject
+  extend Searchable
   # Mixin Searchable here...
 end
